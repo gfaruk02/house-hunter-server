@@ -33,6 +33,7 @@ async function run() {
 
 
     const userCollection = client.db("househunterDb").collection("user");
+    const housesCollection = client.db("househunterDb").collection("houses");
 
     app.post('/user', async (req, res) => {
         const user = req.body;
@@ -42,6 +43,17 @@ async function run() {
           return res.send({ message: 'user already exists', insertedId: null })
         }
         const result = await userCollection.insertOne(user);
+        res.send(result);
+      })
+
+      app.get('/houses', async (req, res) => {
+        const result = await housesCollection.find().toArray();
+        res.send(result);
+      })
+
+      app.post('/houses', async (req, res) => {
+        const addHouses = req.body;
+        const result = await housesCollection.insertOne(addHouses);
         res.send(result);
       })
 
