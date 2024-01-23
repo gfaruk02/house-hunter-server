@@ -14,7 +14,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zjs4f1h.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -35,6 +35,10 @@ async function run() {
     const userCollection = client.db("househunterDb").collection("user");
     const housesCollection = client.db("househunterDb").collection("houses");
 
+    app.get('/user', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
     app.post('/user', async (req, res) => {
         const user = req.body;
         const query = { email: user.email }
@@ -46,6 +50,24 @@ async function run() {
         res.send(result);
       })
 
+      app.post('/login', async (req, res) => {
+        const { email, password } = user = req.body;
+        const query = { email: user.email }
+        // const query = { email:email }
+        const userExists = await userCollection.findOne({ email: email });
+    
+        if (userExists) {
+            if (user.password === password) {
+                return res.send({ message: 'success' })
+            } else {
+                return res.send({ message: 'wrong password' })
+            }
+    
+        } else {
+            return res.send({ message: 'user not exists' })
+        }
+    })
+
       app.get('/houses', async (req, res) => {
         const result = await housesCollection.find().toArray();
         res.send(result);
@@ -54,6 +76,12 @@ async function run() {
       app.post('/houses', async (req, res) => {
         const addHouses = req.body;
         const result = await housesCollection.insertOne(addHouses);
+        res.send(result);
+      })
+      app.delete('/houses/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) }
+        const result = await housesCollection.deleteOne(query);
         res.send(result);
       })
 
