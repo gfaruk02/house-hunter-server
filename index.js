@@ -27,38 +27,38 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
 
     const userCollection = client.db("househunterDb").collection("user");
     const housesCollection = client.db("househunterDb").collection("houses");
     const bookingCollection = client.db("househunterDb").collection("booking");
 
-    // app.post('/jwt', async (req, res) => {
-    //   const user = req.body;
-    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-    //     expiresIn: '1h'
-    //   })
-    //   res.send({ token });
-    // })
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '1h'
+      })
+      res.send({ token });
+    })
 
-    // //middlewares for verifytoken
-    // const verifyToken = (req, res, next) => {
-    //   console.log('inside verify token', req.headers);
-    //   if (!req.headers.authorization) {
-    //     return res.status(401).send({ message: 'unauthorized access' });
-    //   }
-    //   const token = req.headers.authorization.split(' ')[1];
-    //   // next()
-    //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    //     if (err) {
-    //       console.log(err);
-    //       res.status(401).send({ message: 'unauthorized access' })
-    //     }
-    //     req.decoded = decoded;
-    //     next()
-    //   })
-    // }
+    //middlewares for verifytoken
+    const verifyToken = (req, res, next) => {
+      console.log('inside verify token', req.headers);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
+      // next()
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          console.log(err);
+          res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next()
+      })
+    }
 
 
     app.get('/user', async (req, res) => {
@@ -130,8 +130,8 @@ async function run() {
       })
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
