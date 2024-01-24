@@ -1,15 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-// const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
 app.use(cors());
 app.use(express.json());
-
-
 
 
 
@@ -34,6 +32,34 @@ async function run() {
 
     const userCollection = client.db("househunterDb").collection("user");
     const housesCollection = client.db("househunterDb").collection("houses");
+    const bookingCollection = client.db("househunterDb").collection("booking");
+
+    // app.post('/jwt', async (req, res) => {
+    //   const user = req.body;
+    //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    //     expiresIn: '1h'
+    //   })
+    //   res.send({ token });
+    // })
+
+    // //middlewares for verifytoken
+    // const verifyToken = (req, res, next) => {
+    //   console.log('inside verify token', req.headers);
+    //   if (!req.headers.authorization) {
+    //     return res.status(401).send({ message: 'unauthorized access' });
+    //   }
+    //   const token = req.headers.authorization.split(' ')[1];
+    //   // next()
+    //   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    //     if (err) {
+    //       console.log(err);
+    //       res.status(401).send({ message: 'unauthorized access' })
+    //     }
+    //     req.decoded = decoded;
+    //     next()
+    //   })
+    // }
+
 
     app.get('/user', async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -50,22 +76,15 @@ async function run() {
         res.send(result);
       })
 
-      app.post('/login', async (req, res) => {
-        const { email, password } = user = req.body;
-        const query = { email: user.email }
-        // const query = { email:email }
-        const userExists = await userCollection.findOne({ email: email });
-    
-        if (userExists) {
-            if (user.password === password) {
-                return res.send({ message: 'success' })
+      app.put('/user', async (req, res) => {
+        const user = req.body;
+        const query = { email: user.email, password: user.password }
+        const result = await userCollection.findOne(query);
+        if (result==null) {
+               res.send({ flag: -1 })
             } else {
-                return res.send({ message: 'wrong password' })
+                 res.send({result})
             }
-    
-        } else {
-            return res.send({ message: 'user not exists' })
-        }
     })
 
       app.get('/houses', async (req, res) => {
@@ -85,6 +104,12 @@ async function run() {
         res.send(result);
       })
 
+//booking APi /....
+      app.post('/booking', async (req, res) => {
+        const query = req.body;
+        const result = await bookingCollection.insertOne(query);
+        res.send(result);
+      })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
